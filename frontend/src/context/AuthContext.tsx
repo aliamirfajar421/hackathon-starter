@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { useMe, useLogin, useRegister, useLogout } from "@/api/queries";
 import type { User } from "@/api/auth";
 
@@ -15,25 +15,36 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const hasToken = typeof window !== "undefined" && !!localStorage.getItem("accessToken");
+  const [mounted, setMounted] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    setHasToken(!!token);
+    setMounted(true);
+  }, []);
+
   const meQuery = useMe(hasToken);
   const loginMutation = useLogin();
   const registerMutation = useRegister();
   const logoutMutation = useLogout();
 
   const user = meQuery.data?.user ?? null;
-  const loading = hasToken && meQuery.isLoading;
+  const loading = !mounted || (hasToken && meQuery.isLoading);
 
   const login = async (email: string, password: string) => {
     await loginMutation.mutateAsync({ email, password });
+    setHasToken(true);
   };
 
   const register = async (email: string, password: string) => {
     await registerMutation.mutateAsync({ email, password });
+    setHasToken(true);
   };
 
   const logout = async () => {
     await logoutMutation.mutateAsync();
+    setHasToken(false);
   };
 
   return (

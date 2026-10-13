@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
@@ -12,8 +12,8 @@ export default function Home() {
       <p className="text-lg text-gray-600 dark:text-gray-400">
         Next.js + Express authentication starter kit
       </p>
-      <div className="flex gap-4">
-        {user ? (
+      <div className="flex min-h-[48px] items-center gap-4">
+        {loading ? null : user ? (
           <Link
             href="/dashboard"
             className="rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
